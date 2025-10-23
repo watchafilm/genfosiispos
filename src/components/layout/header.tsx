@@ -13,7 +13,7 @@ export function AppHeader() {
         <div className="flex items-center space-x-2">
           <Link href="/" className="flex items-center space-x-2">
             <ShoppingCart className="h-10 w-10 text-primary" />
-            <h1 className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text font-headline text-2xl md:text-3xl font-bold text-transparent">
+            <h1 className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text font-headline text-2xl md:text-3xl font-bold text-transparent">
               Genfosis POS
             </h1>
           </Link>
