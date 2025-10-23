@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Wallet, QrCode, CreditCard, PlusCircle, MinusCircle, Trash2, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { QrCode, CreditCard, PlusCircle, MinusCircle, Trash2, Loader2, CheckCircle, XCircle, Percent } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { Drink, OrderItem, PaymentMethod } from '@/lib/types';
@@ -23,32 +24,42 @@ const QR_CODE_URLS = {
 }
 
 const PAYMENT_METHODS: { id: PaymentMethod; label: string; icon: React.ElementType }[] = [
-  { id: 'cash', label: 'Cash', icon: Wallet },
   { id: 'qr', label: 'QR Scan', icon: QrCode },
   { id: 'credit_card_qr', label: 'Credit Card QR', icon: CreditCard },
 ];
 
+const DISCOUNT_PRESETS = [5, 10, 15, 20];
+
 export default function OrderPanel() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('qr');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const [showQr, setShowQr] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [discount, setDiscount] = useState(0);
+  const [customDiscount, setCustomDiscount] = useState('');
   const { firestore } = useFirebase();
 
-  const totalAmount = useMemo(() => {
+  const subtotal = useMemo(() => {
     return orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [orderItems]);
+
+  const totalAmount = useMemo(() => {
+    const finalDiscount = parseFloat(customDiscount) || discount;
+    const discountedTotal = subtotal - finalDiscount;
+    return discountedTotal > 0 ? discountedTotal : 0;
+  }, [subtotal, discount, customDiscount]);
 
   const handleSetPaymentMethod = (method: PaymentMethod) => {
     setPaymentMethod(method);
     if (method === 'qr' || method === 'credit_card_qr') {
-      setQrCodeUrl(QR_CODE_URLS[method]);
-      setShowQr(true);
+        const url = QR_CODE_URLS[method as keyof typeof QR_CODE_URLS];
+        setQrCodeUrl(url);
+        setShowQr(true);
     } else {
-      setShowQr(false);
-      setQrCodeUrl(null);
+        setShowQr(false);
+        setQrCodeUrl(null);
     }
   };
 
@@ -80,6 +91,19 @@ export default function OrderPanel() {
     setOrderItems(prevItems => prevItems.filter(item => item.name !== productName));
   };
 
+  const applyDiscountPercentage = (percentage: number) => {
+    const discountAmount = (subtotal * percentage) / 100;
+    setDiscount(discountAmount);
+    setCustomDiscount(''); // Clear custom discount
+  };
+
+  const handleCustomDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCustomDiscount(value);
+    if (value) {
+      setDiscount(0); // Clear percentage discount
+    }
+  };
 
   const handleSubmitOrder = async () => {
     if (orderItems.length === 0) {
@@ -103,8 +127,11 @@ export default function OrderPanel() {
     startTransition(() => {
       try {
         const ordersCollection = collection(firestore, 'orders');
+        const finalDiscount = parseFloat(customDiscount) || discount;
         addDocumentNonBlocking(ordersCollection, {
           items: orderItems,
+          subtotal,
+          discount: finalDiscount,
           totalAmount,
           paymentMethod,
           status: 'pending',
@@ -118,7 +145,9 @@ export default function OrderPanel() {
         });
         setOrderItems([]);
         setShowQr(false);
-        setPaymentMethod('cash');
+        setPaymentMethod('qr');
+        setDiscount(0);
+        setCustomDiscount('');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to create order.';
         toast({
@@ -130,15 +159,6 @@ export default function OrderPanel() {
       }
     });
   };
-
-  const getBgColorClass = (productId: string) => {
-    switch (productId) {
-      case 'drink_1': return 'bg-drink-green/10';
-      case 'drink_2': return 'bg-drink-red/10';
-      case 'drink_3': return 'bg-drink-yellow/10';
-      default: return 'bg-gray-100';
-    }
-  }
 
   return (
     <>
@@ -253,8 +273,28 @@ export default function OrderPanel() {
           <CardFooter className="flex-col !p-4 !pt-0 mt-auto bg-card">
             <div className="w-full">
                 <Separator className="my-4"/>
+                <h4 className="font-headline text-lg mb-2">Discount</h4>
+                <div className="grid grid-cols-4 gap-2 mb-2">
+                    {DISCOUNT_PRESETS.map((p) => (
+                        <Button key={p} variant="outline" onClick={() => applyDiscountPercentage(p)}>
+                            {p}%
+                        </Button>
+                    ))}
+                </div>
+                <div className="relative mb-4">
+                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="number"
+                        placeholder="Discount amount (THB)"
+                        value={customDiscount}
+                        onChange={handleCustomDiscountChange}
+                        className="pl-10"
+                    />
+                </div>
+
+                <Separator className="my-4"/>
                 <h4 className="font-headline text-lg mb-2">Payment Method</h4>
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="grid grid-cols-2 gap-2 mb-4">
                     {PAYMENT_METHODS.map(({ id, label, icon: Icon }) => (
                     <Button
                         key={id}
@@ -268,12 +308,26 @@ export default function OrderPanel() {
                     ))}
                 </div>
                 <Separator className="my-4"/>
-                <div className="flex justify-between items-center mb-4">
-                <span className="font-headline text-lg">Total</span>
-                <span className="font-headline text-3xl font-bold">{totalAmount.toFixed(2)} THB</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>Subtotal</span>
+                    <span>{subtotal.toFixed(2)} THB</span>
+                  </div>
+                   {(discount > 0 || parseFloat(customDiscount) > 0) && (
+                    <div className="flex justify-between items-center text-muted-foreground">
+                      <span>Discount</span>
+                      <span className="text-red-500">
+                        -{(parseFloat(customDiscount) || discount).toFixed(2)} THB
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center font-bold text-lg">
+                    <span className="font-headline">Total</span>
+                    <span className="font-headline text-3xl">{totalAmount.toFixed(2)} THB</span>
+                  </div>
                 </div>
             </div>
-            <Button size="lg" className="w-full font-bold text-lg" onClick={handleSubmitOrder} disabled={isPending || orderItems.length === 0}>
+            <Button size="lg" className="w-full font-bold text-lg mt-4" onClick={handleSubmitOrder} disabled={isPending || orderItems.length === 0}>
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {showQr ? 'Confirming...' : 'Submitting...'}
@@ -289,3 +343,5 @@ export default function OrderPanel() {
     </>
   );
 }
+
+    
