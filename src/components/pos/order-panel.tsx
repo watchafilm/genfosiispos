@@ -143,23 +143,23 @@ export default function OrderPanel() {
   return (
     <>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-      <div className="flex flex-col gap-4 h-full">
+      <div className="grid grid-cols-5 grid-rows-3 gap-4">
         {DRINKS.map((product) => (
-            <Card key={product.name} className={cn("overflow-hidden group flex flex-row flex-1", getBgColorClass(product.id))}>
-                <div className="relative w-56 h-full">
+            <Card key={product.name} className={cn("overflow-hidden group flex flex-col", product.bgColor)}>
+                <div className="relative w-full h-32">
                     <Image
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        className="object-cover object-top transform group-hover:scale-110 transition-transform duration-300 p-4"
+                        className="object-cover object-center transform group-hover:scale-110 transition-transform duration-300"
                     />
                 </div>
-                <div className="flex flex-col p-4 flex-grow justify-center">
-                    <h3 className={`font-headline text-xl font-semibold ${product.color}`}>{product.name}</h3>
-                    <p className="text-muted-foreground font-medium mb-4">{product.price} THB</p>
+                <div className="flex flex-col p-3 flex-grow">
+                    <h3 className={`font-headline text-sm font-semibold ${product.color} flex-grow`}>{product.name}</h3>
+                    <p className="text-muted-foreground font-medium text-xs mb-2">{product.price} THB</p>
                     <div className="mt-auto">
-                        <Button onClick={() => handleAddItem(product)} className="w-full">
-                            <PlusCircle className="mr-2 h-4 w-4" /> Add
+                        <Button onClick={() => handleAddItem(product)} className="w-full h-8 text-xs">
+                            <PlusCircle className="mr-2 h-3 w-3" /> Add
                         </Button>
                     </div>
                 </div>
