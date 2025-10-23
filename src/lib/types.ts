@@ -8,6 +8,8 @@ export type Drink = {
     color: string;
     bgColor: string;
     imageUrl: string;
+    stock: number;
+    sold: number;
 };
 
 export type OrderItem = {
@@ -37,3 +39,10 @@ export type Summary = {
     totalOrders: number;
     mostPopularDrink: string;
 };
+
+export type ProductSummary = {
+  name: string;
+  sold: number;
+  stock: number;
+  revenue: number;
+}

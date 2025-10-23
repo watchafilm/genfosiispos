@@ -1,39 +1,68 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useOrders, type ExpandedOrder } from '@/lib/hooks/use-orders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { Summary } from '@/lib/types';
+import type { Summary, ProductSummary, Drink } from '@/lib/types';
+import { DRINKS } from '@/lib/data';
 
-function calculateSummary(orders: ExpandedOrder[]): Summary {
+function calculateSummary(orders: ExpandedOrder[], products: Drink[]): { summary: Summary, productSummaries: ProductSummary[] } {
     const totalRevenue = orders.reduce((acc, order) => acc + order.totalAmount, 0);
     const totalOrders = orders.length;
-    
-    const drinkCounts = orders.flatMap(o => o.items).reduce((acc, item) => {
-        acc[item.name] = (acc[item.name] || 0) + item.quantity;
-        return acc;
-    }, {} as Record<string, number>);
 
-    const mostPopularDrink = Object.entries(drinkCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+    const itemStats = new Map<string, { quantity: number; revenue: number }>();
+
+    orders.flatMap(o => o.items).forEach(item => {
+        const stats = itemStats.get(item.name) || { quantity: 0, revenue: 0 };
+        stats.quantity += item.quantity;
+        stats.revenue += item.quantity * item.price;
+        itemStats.set(item.name, stats);
+    });
+    
+    const mostPopularDrink = [...itemStats.entries()].sort((a, b) => b[1].quantity - a[1].quantity)[0]?.[0] || 'N/A';
+
+    const productSummaries = products.map(product => {
+        const stats = itemStats.get(product.name) || { quantity: 0, revenue: 0 };
+        return {
+            name: product.name,
+            sold: stats.quantity,
+            stock: product.stock,
+            revenue: stats.revenue,
+        };
+    });
 
     return {
-        totalRevenue,
-        totalOrders,
-        mostPopularDrink,
+        summary: {
+            totalRevenue,
+            totalOrders,
+            mostPopularDrink,
+        },
+        productSummaries
     };
 }
 
 
 export default function SummaryDisplay() {
   const { orders, isLoading, error } = useOrders();
+  const [products, setProducts] = useState<Drink[]>(DRINKS);
+  
+  useEffect(() => {
+    const storedProducts = localStorage.getItem('products');
+    if (storedProducts) {
+      setProducts(JSON.parse(storedProducts));
+    }
+  }, [orders]); // Re-check local storage when orders change, as it might signify an update
 
-  const summary = useMemo(() => {
-    if (!orders) return { totalRevenue: 0, totalOrders: 0, mostPopularDrink: 'N/A' };
-    return calculateSummary(orders);
-  }, [orders]);
+  const { summary, productSummaries } = useMemo(() => {
+    if (!orders) return { 
+        summary: { totalRevenue: 0, totalOrders: 0, mostPopularDrink: 'N/A' },
+        productSummaries: products.map(p => ({ name: p.name, sold: 0, stock: p.stock, revenue: 0}))
+    };
+    return calculateSummary(orders, products);
+  }, [orders, products]);
 
   if (isLoading) {
     return <div>Loading summary...</div>;
@@ -87,6 +116,34 @@ export default function SummaryDisplay() {
                 </CardContent>
             </Card>
         </div>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Product Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Product</TableHead>
+                            <TableHead>Sold</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead>Revenue</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {productSummaries.map(product => (
+                             <TableRow key={product.name}>
+                                <TableCell>{product.name}</TableCell>
+                                <TableCell>{product.sold}</TableCell>
+                                <TableCell>{product.stock}</TableCell>
+                                <TableCell>{product.revenue.toFixed(2)} THB</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
         
         <Card>
             <CardHeader>
