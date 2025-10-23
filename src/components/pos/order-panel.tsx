@@ -208,7 +208,7 @@ export default function OrderPanel() {
           </CardHeader>
           <CardContent className="flex-grow flex flex-col">
             <Separator />
-            <div className="relative flex-grow min-h-[260px] overflow-auto">
+            <div className="relative flex-grow min-h-[150px] overflow-auto">
               <AnimatePresence mode="wait">
                 {showQr && qrCodeUrl ? (
                   <motion.div
@@ -344,4 +344,5 @@ export default function OrderPanel() {
   );
 }
 
+    
     
