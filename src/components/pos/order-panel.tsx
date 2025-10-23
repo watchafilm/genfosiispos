@@ -282,13 +282,11 @@ export default function OrderPanel() {
                     ))}
                 </div>
                 <div className="relative mb-4">
-                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="number"
                         placeholder="Discount amount (THB)"
                         value={customDiscount}
                         onChange={handleCustomDiscountChange}
-                        className="pl-10"
                     />
                 </div>
 
@@ -345,4 +343,6 @@ export default function OrderPanel() {
 }
 
     
+    
+
     
