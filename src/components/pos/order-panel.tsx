@@ -142,8 +142,8 @@ export default function OrderPanel() {
 
   return (
     <>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-      <div className="grid grid-cols-5 grid-rows-3 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+      <div className="lg:col-span-2 grid grid-cols-5 grid-rows-3 gap-4">
         {DRINKS.map((product) => (
             <Card key={product.name} className={cn("overflow-hidden group flex flex-col", product.bgColor)}>
                 <div className="relative w-full h-32">
@@ -167,7 +167,7 @@ export default function OrderPanel() {
         ))}
       </div>
 
-      <div className="flex flex-col h-full">
+      <div className="lg:col-span-1 flex flex-col h-full">
         <Card className="flex flex-col flex-grow">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Current Order</CardTitle>
