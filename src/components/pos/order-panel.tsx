@@ -52,32 +52,32 @@ export default function OrderPanel() {
     }
   };
 
-  const handleAddItem = (drink: Drink) => {
+  const handleAddItem = (product: Drink) => {
     setOrderItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.name === drink.name);
+      const existingItem = prevItems.find((item) => item.name === product.name);
       if (existingItem) {
         return prevItems.map((item) =>
-          item.name === drink.name ? { ...item, quantity: item.quantity + 1 } : item
+          item.name === product.name ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prevItems, { name: drink.name, price: drink.price, quantity: 1, drinkId: drink.id }];
+      return [...prevItems, { name: product.name, price: product.price, quantity: 1, drinkId: product.id }];
     });
   };
 
-  const handleRemoveItem = (drinkName: Drink['name']) => {
+  const handleRemoveItem = (productName: Drink['name']) => {
     setOrderItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.name === drinkName);
+      const existingItem = prevItems.find((item) => item.name === productName);
       if (existingItem && existingItem.quantity > 1) {
         return prevItems.map((item) =>
-          item.name === drinkName ? { ...item, quantity: item.quantity - 1 } : item
+          item.name === productName ? { ...item, quantity: item.quantity - 1 } : item
         );
       }
-      return prevItems.filter((item) => item.name !== drinkName);
+      return prevItems.filter((item) => item.name !== productName);
     });
   };
   
-  const handleClearItem = (drinkName: Drink['name']) => {
-    setOrderItems(prevItems => prevItems.filter(item => item.name !== drinkName));
+  const handleClearItem = (productName: Drink['name']) => {
+    setOrderItems(prevItems => prevItems.filter(item => item.name !== productName));
   };
 
 
@@ -131,12 +131,12 @@ export default function OrderPanel() {
     });
   };
 
-  const getBgColorClass = (drinkId: string) => {
-    switch (drinkId) {
+  const getBgColorClass = (productId: string) => {
+    switch (productId) {
       case 'drink_1': return 'bg-drink-green/10';
       case 'drink_2': return 'bg-drink-red/10';
       case 'drink_3': return 'bg-drink-yellow/10';
-      default: return '';
+      default: return 'bg-gray-100';
     }
   }
 
@@ -144,21 +144,21 @@ export default function OrderPanel() {
     <>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
       <div className="flex flex-col gap-4 h-full">
-        {DRINKS.map((drink) => (
-            <Card key={drink.name} className={cn("overflow-hidden group flex flex-row flex-1", getBgColorClass(drink.id))}>
+        {DRINKS.map((product) => (
+            <Card key={product.name} className={cn("overflow-hidden group flex flex-row flex-1", getBgColorClass(product.id))}>
                 <div className="relative w-56 h-full">
                     <Image
-                        src={drink.imageUrl}
-                        alt={drink.name}
+                        src={product.imageUrl}
+                        alt={product.name}
                         fill
                         className="object-cover object-top transform group-hover:scale-110 transition-transform duration-300 p-4"
                     />
                 </div>
                 <div className="flex flex-col p-4 flex-grow justify-center">
-                    <h3 className={`font-headline text-xl font-semibold ${drink.color}`}>{drink.name}</h3>
-                    <p className="text-muted-foreground font-medium mb-4">{drink.price} THB</p>
+                    <h3 className={`font-headline text-xl font-semibold ${product.color}`}>{product.name}</h3>
+                    <p className="text-muted-foreground font-medium mb-4">{product.price} THB</p>
                     <div className="mt-auto">
-                        <Button onClick={() => handleAddItem(drink)} className="w-full">
+                        <Button onClick={() => handleAddItem(product)} className="w-full">
                             <PlusCircle className="mr-2 h-4 w-4" /> Add
                         </Button>
                     </div>

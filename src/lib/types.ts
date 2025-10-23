@@ -3,7 +3,7 @@ import { Timestamp } from "firebase/firestore";
 
 export type Drink = {
     id: string;
-    name: 'Bitkub Awakening' | 'Crimson Flow' | 'Elysian Pulse';
+    name: string;
     price: number;
     color: string;
     bgColor: string;
@@ -12,7 +12,7 @@ export type Drink = {
 
 export type OrderItem = {
     drinkId: string;
-    name: Drink['name'];
+    name: string;
     quantity: number;
     price: number;
 };
