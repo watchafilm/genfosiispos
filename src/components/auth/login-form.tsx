@@ -30,8 +30,7 @@ export function LoginForm() {
     e.preventDefault()
     if (username === 'genfosis' && password === 'sisfogen') {
       setCookie('isAuthenticated', 'true', 7) // Set cookie for 7 days
-      router.refresh() // Refresh to make middleware re-evaluate with the new cookie
-      router.push('/')   // Redirect to home page
+      router.refresh() // Refresh to make middleware re-evaluate
     } else {
       setError('Invalid username or password')
     }
@@ -87,7 +86,7 @@ export function LoginForm() {
       </CardContent>
       <CardFooter>
         <p className="text-xs text-center text-gray-500 w-full">
-          &copy; {new Date().getFullYear()} Longevity Bar. All rights reserved.
+          &copy; {new Date().getFullYear()} Genfosis POS. All rights reserved.
         </p>
       </CardFooter>
     </Card>

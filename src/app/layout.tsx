@@ -6,7 +6,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: 'Longevity Bar',
+  title: 'Genfosis POS',
   description: 'A modern beverage ordering system.',
 };
 
