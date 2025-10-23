@@ -171,7 +171,7 @@ export default function OrderPanel() {
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        className="object-cover object-center transform group-hover:scale-110 transition-transform duration-300"
+                        className="object-contain object-center transform group-hover:scale-110 transition-transform duration-300"
                     />
                 </div>
                 <div className="flex flex-col p-3 flex-grow">
@@ -343,6 +343,8 @@ export default function OrderPanel() {
 }
 
     
+    
+
     
 
     
