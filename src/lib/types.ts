@@ -37,7 +37,7 @@ export type OrderPayload = Omit<Order, 'id' | 'createdAt' | 'status'>;
 export type Summary = {
     totalRevenue: number;
     totalOrders: number;
-    mostPopularDrink: string;
+    mostPopularProduct: string;
 };
 
 export type ProductSummary = {

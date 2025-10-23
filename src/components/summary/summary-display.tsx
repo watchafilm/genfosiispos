@@ -22,7 +22,7 @@ function calculateSummary(orders: ExpandedOrder[], products: Drink[]): { summary
         itemStats.set(item.name, stats);
     });
     
-    const mostPopularDrink = [...itemStats.entries()].sort((a, b) => b[1].quantity - a[1].quantity)[0]?.[0] || 'N/A';
+    const mostPopularProduct = [...itemStats.entries()].sort((a, b) => b[1].quantity - a[1].quantity)[0]?.[0] || 'N/A';
 
     const productSummaries = products.map(product => {
         const stats = itemStats.get(product.name) || { quantity: 0, revenue: 0 };
@@ -38,7 +38,7 @@ function calculateSummary(orders: ExpandedOrder[], products: Drink[]): { summary
         summary: {
             totalRevenue,
             totalOrders,
-            mostPopularDrink,
+            mostPopularProduct,
         },
         productSummaries
     };
@@ -58,7 +58,7 @@ export default function SummaryDisplay() {
 
   const { summary, productSummaries } = useMemo(() => {
     if (!orders) return { 
-        summary: { totalRevenue: 0, totalOrders: 0, mostPopularDrink: 'N/A' },
+        summary: { totalRevenue: 0, totalOrders: 0, mostPopularProduct: 'N/A' },
         productSummaries: products.map(p => ({ name: p.name, sold: 0, stock: p.stock, revenue: 0}))
     };
     return calculateSummary(orders, products);
@@ -109,10 +109,10 @@ export default function SummaryDisplay() {
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Most Popular Drink</CardTitle>
+                    <CardTitle className="text-sm font-medium">Most Popular Product</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{summary.mostPopularDrink}</div>
+                    <div className="text-2xl font-bold">{summary.mostPopularProduct}</div>
                 </CardContent>
             </Card>
         </div>
