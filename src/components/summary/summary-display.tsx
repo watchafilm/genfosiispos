@@ -73,11 +73,13 @@ export default function SummaryDisplay() {
   }
   
   const getOrderStatus = (order: ExpandedOrder): { status: 'pending' | 'in progress' | 'served', servedCount: number, totalCount: number } => {
-    if (!order.itemStatuses || order.itemStatuses.length === 0) {
-        return { status: 'pending', servedCount: 0, totalCount: order.items.length };
+    const totalCount = order.items.reduce((acc, item) => acc + item.quantity, 0);
+
+    if (!order.itemStatuses) {
+        return { status: 'pending', servedCount: 0, totalCount };
     }
+    
     const servedCount = order.itemStatuses.filter(s => s === 'served').length;
-    const totalCount = order.items.length;
 
     if (servedCount === totalCount) {
         return { status: 'served', servedCount, totalCount };

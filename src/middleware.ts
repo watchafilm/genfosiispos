@@ -2,28 +2,20 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  // Assume a user is not authenticated if there's no cookie
   const isAuthenticated = request.cookies.get('isAuthenticated')?.value === 'true'
   const { pathname } = request.nextUrl
 
-  const isLoginPage = pathname === '/login'
-
-  // If the user is authenticated
-  if (isAuthenticated) {
-    // If they are on the login page, redirect to home
-    if (isLoginPage) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-    // Otherwise, allow them to proceed
-    return NextResponse.next()
-  }
-
-  // If the user is NOT authenticated
-  // and they are NOT on the login page, redirect to login
-  if (!isLoginPage) {
+  // If the user is not authenticated and trying to access any page other than the login page, redirect them.
+  if (!isAuthenticated && pathname !== '/login') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If they are on the login page, allow them to proceed
+  // If the user is authenticated and trying to access the login page, redirect them to the home page.
+  if (isAuthenticated && pathname === '/login') {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
   return NextResponse.next()
 }
 
