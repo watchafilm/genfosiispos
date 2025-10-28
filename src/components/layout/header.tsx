@@ -1,7 +1,8 @@
+
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Package } from 'lucide-react';
+import { ShoppingCart, Package, BarChart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +27,9 @@ export function AppHeader() {
           </Button>
           <Button variant="ghost" onClick={() => router.push('/stock')}>
              <Package className="mr-2 h-4 w-4" /> Stock
+          </Button>
+          <Button variant="ghost" onClick={() => router.push('/actualrevenue')}>
+             <BarChart className="mr-2 h-4 w-4" /> Actual Revenue
           </Button>
         </nav>
       </div>
