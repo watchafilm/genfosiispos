@@ -13,7 +13,4 @@ export const DRINKS: Drink[] = [
   { id: 'item_16', name: 'NMN', price: 2499, color: 'text-gray-800', bgColor: 'bg-gray-100', imageUrl: 'https://placehold.co/600x400/EEE/31343C?text=NMN', stock: 100, sold: 0 },
   { id: 'item_17', name: 'RES Q', price: 1799, color: 'text-gray-800', bgColor: 'bg-gray-100', imageUrl: 'https://placehold.co/600x400/EEE/31343C?text=RES+Q', stock: 100, sold: 0 },
   { id: 'item_18', name: 'CREATINE', price: 899, color: 'text-gray-800', bgColor: 'bg-gray-100', imageUrl: 'https://placehold.co/600x400/EEE/31343C?text=CREATINE', stock: 100, sold: 0 },
-  { id: 'item_12', name: 'Ice Cooling Stick', price: 450, color: 'text-gray-800', bgColor: 'bg-gray-100', imageUrl: 'https://drive.google.com/uc?export=view&id=1A6hNQbElF9TQcd8EiAhdcJDiuEsS-DNc', stock: 100, sold: 0 },
-  { id: 'item_13', name: 'Hot and Cold Skin Booster', price: 1990, color: 'text-gray-800', bgColor: 'bg-gray-100', imageUrl: 'https://drive.google.com/uc?export=view&id=1odRaUZxBKCSLCqO4TiY3TqLfprYpV1aX', stock: 100, sold: 0 },
-  { id: 'item_14', name: 'LED eye mask', price: 4740, color: 'text-gray-800', bgColor: 'bg-gray-100', imageUrl: 'https://drive.google.com/uc?export=view&id=1JsVZ8xohK3H0mCq1LeKd__SUybtriLib', stock: 100, sold: 0 },
 ];
