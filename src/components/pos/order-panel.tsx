@@ -185,7 +185,7 @@ export default function OrderPanel() {
   return (
     <>
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-      <div className="lg:col-span-2 grid grid-cols-5 grid-rows-3 gap-4">
+      <div className="lg:col-span-2 grid grid-cols-4 grid-rows-3 gap-4">
         {DRINKS.map((product) => (
             <Card key={product.id} className={cn("overflow-hidden group flex flex-col", product.bgColor)}>
                 <div className="relative w-full h-32">
