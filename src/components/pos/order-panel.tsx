@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,10 @@ const PAYMENT_METHODS: { id: PaymentMethod; label: string; icon: React.ElementTy
 ];
 
 const DISCOUNT_PRESETS = [5, 10, 15, 20];
+const BUDDY_PATCH_IDS = ['item_8', 'item_9', 'item_10'];
+const BUDDY_PATCH_PROMO_PRICE = 399;
+const BUDDY_PATCH_PROMO_QUANTITY = 2;
+
 
 export default function OrderPanel() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -45,11 +49,27 @@ export default function OrderPanel() {
     return orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [orderItems]);
 
+  const buddyPatchPromoDiscount = useMemo(() => {
+    const buddyPatchItems = orderItems.filter(item => BUDDY_PATCH_IDS.includes(item.drinkId));
+    const totalBuddyPatches = buddyPatchItems.reduce((sum, item) => sum + item.quantity, 0);
+    const numberOfPromos = Math.floor(totalBuddyPatches / BUDDY_PATCH_PROMO_QUANTITY);
+
+    if (numberOfPromos === 0) return 0;
+
+    const originalPriceForPromoQuantity = buddyPatchItems
+      .find(i => i.quantity > 0)?.price || 219;
+    
+    const originalPrice = numberOfPromos * BUDDY_PATCH_PROMO_QUANTITY * originalPriceForPromoQuantity;
+    const discountedPrice = numberOfPromos * BUDDY_PATCH_PROMO_PRICE;
+    
+    return originalPrice - discountedPrice;
+  }, [orderItems]);
+
   const totalAmount = useMemo(() => {
     const finalDiscount = parseFloat(customDiscount) || discount;
-    const discountedTotal = subtotal - finalDiscount;
+    const discountedTotal = subtotal - finalDiscount - buddyPatchPromoDiscount;
     return discountedTotal > 0 ? discountedTotal : 0;
-  }, [subtotal, discount, customDiscount]);
+  }, [subtotal, discount, customDiscount, buddyPatchPromoDiscount]);
 
   const handleSetPaymentMethod = (method: PaymentMethod) => {
     setPaymentMethod(method);
@@ -65,30 +85,30 @@ export default function OrderPanel() {
 
   const handleAddItem = (product: Drink) => {
     setOrderItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.name === product.name);
+      const existingItem = prevItems.find((item) => item.drinkId === product.id);
       if (existingItem) {
         return prevItems.map((item) =>
-          item.name === product.name ? { ...item, quantity: item.quantity + 1 } : item
+          item.drinkId === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prevItems, { name: product.name, price: product.price, quantity: 1, drinkId: product.id }];
     });
   };
 
-  const handleRemoveItem = (productName: Drink['name']) => {
+  const handleRemoveItem = (drinkId: string) => {
     setOrderItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.name === productName);
+      const existingItem = prevItems.find((item) => item.drinkId === drinkId);
       if (existingItem && existingItem.quantity > 1) {
         return prevItems.map((item) =>
-          item.name === productName ? { ...item, quantity: item.quantity - 1 } : item
+          item.drinkId === drinkId ? { ...item, quantity: item.quantity - 1 } : item
         );
       }
-      return prevItems.filter((item) => item.name !== productName);
+      return prevItems.filter((item) => item.drinkId !== drinkId);
     });
   };
   
-  const handleClearItem = (productName: Drink['name']) => {
-    setOrderItems(prevItems => prevItems.filter(item => item.name !== productName));
+  const handleClearItem = (drinkId: string) => {
+    setOrderItems(prevItems => prevItems.filter(item => item.drinkId !== drinkId));
   };
 
   const applyDiscountPercentage = (percentage: number) => {
@@ -128,10 +148,12 @@ export default function OrderPanel() {
       try {
         const ordersCollection = collection(firestore, 'orders');
         const finalDiscount = parseFloat(customDiscount) || discount;
+        const totalDiscount = finalDiscount + buddyPatchPromoDiscount;
+
         addDocumentNonBlocking(ordersCollection, {
           items: orderItems,
           subtotal,
-          discount: finalDiscount,
+          discount: totalDiscount,
           totalAmount,
           paymentMethod,
           status: 'pending',
@@ -165,7 +187,7 @@ export default function OrderPanel() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
       <div className="lg:col-span-2 grid grid-cols-5 grid-rows-3 gap-4">
         {DRINKS.map((product) => (
-            <Card key={product.name} className={cn("overflow-hidden group flex flex-col", product.bgColor)}>
+            <Card key={product.id} className={cn("overflow-hidden group flex flex-col", product.bgColor)}>
                 <div className="relative w-full h-32">
                     <Image
                         src={product.imageUrl}
@@ -244,20 +266,20 @@ export default function OrderPanel() {
                     ) : (
                       <div className="h-full overflow-y-auto pr-2">
                         {orderItems.map((item) => (
-                          <div key={item.name} className="flex items-center justify-between py-2">
+                          <div key={item.drinkId} className="flex items-center justify-between py-2">
                             <div>
                               <p className="font-semibold">{item.name}</p>
                               <p className="text-sm text-muted-foreground">{item.price} THB</p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveItem(item.name)}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveItem(item.drinkId)}>
                                   <MinusCircle className="h-4 w-4"/>
                               </Button>
                               <span className="font-bold w-4 text-center">{item.quantity}</span>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleAddItem(DRINKS.find(d => d.name === item.name)!)}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleAddItem(DRINKS.find(d => d.id === item.drinkId)!)}>
                                   <PlusCircle className="h-4 w-4"/>
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive" onClick={() => handleClearItem(item.name)}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive" onClick={() => handleClearItem(item.drinkId)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -311,11 +333,11 @@ export default function OrderPanel() {
                     <span>Subtotal</span>
                     <span>{subtotal.toFixed(2)} THB</span>
                   </div>
-                   {(discount > 0 || parseFloat(customDiscount) > 0) && (
+                   {(discount > 0 || parseFloat(customDiscount) > 0 || buddyPatchPromoDiscount > 0) && (
                     <div className="flex justify-between items-center text-muted-foreground">
                       <span>Discount</span>
                       <span className="text-red-500">
-                        -{(parseFloat(customDiscount) || discount).toFixed(2)} THB
+                        -{(parseFloat(customDiscount) || discount + buddyPatchPromoDiscount).toFixed(2)} THB
                       </span>
                     </div>
                   )}
@@ -341,10 +363,3 @@ export default function OrderPanel() {
     </>
   );
 }
-
-    
-    
-
-    
-
-    
